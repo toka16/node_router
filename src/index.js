@@ -20,6 +20,15 @@ app.post('/', (req, res) => {
     res.end("hello post")
 })
 
+app.get('/error', (req, res) => {
+    throw new Error("this is an error")
+})
+
+app.use((err, req, res, next) => {
+    console.log('error handler', err)
+    throw new Error("another error")
+})
+
 app.listen(PORT, () => {
     console.log(`listening on http://localhost:${PORT}`)
 })

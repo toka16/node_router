@@ -1,9 +1,7 @@
 const http = require('http')
 const Route = require('./route')
 
-const httpMethods = ["GET", "POST", "PUT", "DELETE"];
-
-const defaultErrorHandler = (req, res) => {
+const defaultErrorHandler = (err, req, res) => {
     res.writeHead(500);
     res.end('Internal Server Error');
 }
@@ -44,15 +42,6 @@ class Router {
     }
 
     _addRoute({ path = "*", method = "*", handler }) {
-        if (typeof path !== 'string') {
-            throw new Error("Path must be a string")
-        }
-        if (method !== "*" && !httpMethods.includes(method)) {
-            throw new Error("Method mus be on of the following: " + httpMethods)
-        }
-        if (typeof handler !== 'function') {
-            throw new Error("Handler must be a function")
-        }
         const route = new Route({ path, handler, method })
         this._routes.push(route)
     }
@@ -60,13 +49,23 @@ class Router {
     _handler(req, res) {
         let error = null;
         for (let route of this._routes) {
-            if (route.matches(req)) {
-                try {
-                    route.handle(req, res)
-                } catch (e) {
-                    error = e
+            if (!!error === route.isErrorHandler()) {
+                if (route.matches(req)) {
+                    try {
+                        if (error) {
+                            route.handle(error, req, res)
+                        } else {
+                            route.handle(req, res)
+                        }
+                        error = null
+                    } catch (e) {
+                        error = e
+                    }
                 }
             }
+        }
+        if (error) {
+            this._default_error_handler(error, req, res)
         }
     }
 }
