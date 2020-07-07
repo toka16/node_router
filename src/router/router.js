@@ -11,6 +11,8 @@ class Router {
     constructor() {
         this._routes = []
         this._default_error_handler = defaultErrorHandler
+
+        this.handler = this.handler.bind(this)
     }
 
     use(path, handler) {
@@ -38,7 +40,14 @@ class Router {
     }
 
     listen(port, callback) {
-        http.createServer(this._handler.bind(this)).listen({ port }, callback)
+        http.createServer(this.handler).listen({ port }, callback)
+    }
+
+    setDefaultErrorHandler(handler) {
+        if (typeof handler !== 'function') {
+            throw new Error("Handler must be a function")
+        }
+        this._default_error_handler = handler
     }
 
     _addRoute({ path = "*", method = "*", handler }) {
@@ -46,27 +55,30 @@ class Router {
         this._routes.push(route)
     }
 
-    _handler(req, res) {
-        let error = null;
-        for (let route of this._routes) {
-            if (!!error === route.isErrorHandler()) {
-                if (route.matches(req)) {
-                    try {
-                        if (error) {
-                            route.handle(error, req, res)
-                        } else {
-                            route.handle(req, res)
-                        }
-                        error = null
-                    } catch (e) {
-                        error = e
-                    }
+    handler(req, res) {
+        let i = 0;
+        const next = (error) => {
+            while (i < this._routes.length && (!error === this._routes[i].isErrorHandler() || !this._routes[i].matches(req))) {
+                i++
+            }
+            if (i >= this._routes.length) {
+                if (error) {
+                    this._default_error_handler(error, req, res)
                 }
+                return
+            }
+            const route = this._routes[i++]
+            try {
+                if (error) {
+                    route.handle(error, req, res, next)
+                } else {
+                    route.handle(req, res, next)
+                }
+            } catch (e) {
+                next(e)
             }
         }
-        if (error) {
-            this._default_error_handler(error, req, res)
-        }
+        next()
     }
 }
 

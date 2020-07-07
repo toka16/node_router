@@ -6,6 +6,7 @@ const app = new Router()
 
 app.use((req, res, next) => {
     console.log('this is a test middleware')
+    next()
 })
 
 app.use("/sub", (req, res) => {
@@ -25,8 +26,12 @@ app.get('/error', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-    console.log('error handler', err)
-    throw new Error("another error")
+    res.end("test")
+    next()
+})
+
+app.use((req, res) => {
+    console.log('last middleware')
 })
 
 app.listen(PORT, () => {

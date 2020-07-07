@@ -26,8 +26,8 @@ class Route {
             && (this.method === '*' || this.method === request.method)
     }
 
-    handle(req, res, next) {
-        this.handler(req, res, next)
+    handle(...args) {
+        this.handler(...args)
     }
 }
 
