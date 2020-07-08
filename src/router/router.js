@@ -40,7 +40,12 @@ class Router {
     }
 
     listen(port, callback) {
-        http.createServer(this.handler).listen({ port }, callback)
+        this.server = http.createServer(this.handler).listen({ port }, callback)
+        return this.server
+    }
+
+    address() {
+        return this.server.address()
     }
 
     setDefaultErrorHandler(handler) {
