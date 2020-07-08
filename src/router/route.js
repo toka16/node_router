@@ -18,10 +18,12 @@ class Route {
     }
 
     isErrorHandler() {
+        // check if number of arguments is 4 (err, req, res, next)
         return this.handler.length === 4
     }
 
     matches(request) {
+        // if path matches and method metches
         return (this.path === '*' || this.path === request.url)
             && (this.method === '*' || this.method === request.method)
     }

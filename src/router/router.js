@@ -63,10 +63,13 @@ class Router {
     handler(req, res) {
         let i = 0;
         const next = (error) => {
+            // look for a next route which matches the request
             while (i < this._routes.length && (!error === this._routes[i].isErrorHandler() || !this._routes[i].matches(req))) {
                 i++
             }
+            // if there are no more routes left
             if (i >= this._routes.length) {
+                // if we have an existing error, call the default error handler
                 if (error) {
                     this._default_error_handler(error, req, res)
                 }
