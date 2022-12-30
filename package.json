@@ -20,7 +20,7 @@
   "homepage": "https://github.com/toka16/node_router#readme",
   "devDependencies": {
     "axios": "^0.19.2",
-    "mocha": "^8.0.1",
+    "mocha": "^8.4.0",
     "nodemon": "^2.0.4"
   }
 }
